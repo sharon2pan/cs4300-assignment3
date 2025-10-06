@@ -2,6 +2,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <vector>
+#include <iostream>
 using namespace std;
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -112,8 +113,6 @@ void View::init(Model& model)
             0.1f,
             10000.0f);
             
-
-   // projection = glm::ortho(-400.0f,400.0f,-400.0f,400.0f,0.1f,10000.0f);
     angleOfRotation = 0;
     cameraMode = GLOBAL;
 
@@ -167,8 +166,21 @@ void View::display(Model& model)
 
     for (string name:model.getMeshNames()) {
         modelview.push(modelview.top());  // save the current modelview
-        glm::mat4 transform =
+        glm::mat4 transform;
+
+        // Apply planet transformations to the satellites
+        if (name.find(" satellite") != std::string::npos) {
+            std::string planetName = name.substr(0, name.find(" satellite"));
+            glm::mat4 planetTransform = model.getTransform(planetName);
+            glm::mat4 planetAnimation = model.getAnimationTransform(planetName);
+
+            transform = planetAnimation * planetTransform *
             model.getAnimationTransform(name) * model.getTransform(name);
+        }
+        else {
+            transform =
+            model.getAnimationTransform(name) * model.getTransform(name);
+        }
         modelview.top() = modelview.top() * transform;
 
         // The total transformation is whatever was passed to it, with its own
@@ -218,6 +230,13 @@ void View::onkey(GLFWwindow* window, int key, int scancode, int action, int mods
     }
     else if (key=='G') {
         cameraMode = GLOBAL;
+    }
+}
+
+void View::onmouse(GLFWwindow* window, int button, int action, int mods)
+{
+    if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
+        printf("yo");
     }
 }
 

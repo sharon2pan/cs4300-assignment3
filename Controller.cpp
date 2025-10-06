@@ -34,6 +34,21 @@ void Controller::createModels() {
 
     ifstream in;
 
+    // trackball - should be stationary and only rotates
+    in.open("models/sphere.obj");
+    mesh = util::ObjImporter<VertexAttrib>::importFile(in, false);
+    // change color to black to blend in with background
+    mat.setAmbient(0, 0,
+                   0);  // only this one is used currently to determine color
+    mat.setDiffuse(0, 0, 0);
+    mat.setSpecular(0, 0, 0);
+
+    transform = glm::translate(glm::mat4(1.0), glm::vec3(0.0f, 30.0f, 0.0f)) *
+                glm::scale(glm::mat4(1.0), glm::vec3(700.0f, 700.0f, 700.0f));
+
+    model.addMesh("trackball",mesh,mat,transform);
+    in.close();
+    
 
     // floor
     in.open("models/box.obj");
@@ -102,7 +117,7 @@ void Controller::createModels() {
     model.addMesh("right wall",mesh,mat,transform);
     in.close();
 
-    // sun
+    // sun - should be stationary
     in.open("models/sphere.obj");
     mesh = util::ObjImporter<VertexAttrib>::importFile(in, false);
     mat.setAmbient(1, 1,
@@ -149,6 +164,18 @@ void Controller::createModels() {
     model.addMesh("blue planet",mesh,mat,transform);
     in.close();
 
+    // blue planet satellite
+    in.open("models/cylinder.obj");
+    mesh = util::ObjImporter<VertexAttrib>::importFile(in, false);
+    mat.setAmbient(0, 0.8,
+                   1);  // only this one is used currently to determine color
+    mat.setDiffuse(0, 0.8, 1);
+    mat.setSpecular(0, 0.8, 1);
+    transform = glm::rotate(glm::mat4(1.0), glm::radians(90.0f), glm::vec3(1,0,0)) *
+                glm::scale(glm::mat4(1.0), glm::vec3(5.0f, 15.0f, 5.0f));
+    model.addMesh("blue planet satellite",mesh,mat,transform);
+    in.close();
+
     // purple planet
     in.open("models/sphere.obj");
     mesh = util::ObjImporter<VertexAttrib>::importFile(in, true);
@@ -156,9 +183,31 @@ void Controller::createModels() {
                    1);  // only this one is used currently to determine color
     mat.setDiffuse(0.5, 0, 1);
     mat.setSpecular(0.5, 0, 1);
-    // the translation correction in y is because the base of the nepture model
-    // is not exactly horizontal
     transform = glm::scale(glm::mat4(1.0), glm::vec3(20.0f, 20.0f, 20.0f));
     model.addMesh("purple planet",mesh,mat,transform);
+    in.close();
+
+    // purple planet satellite 1
+    in.open("models/cylinder.obj");
+    mesh = util::ObjImporter<VertexAttrib>::importFile(in, true);
+    mat.setAmbient(1, 0,
+                   1);  // only this one is used currently to determine color
+    mat.setDiffuse(1, 0, 1);
+    mat.setSpecular(1, 0, 1);
+    transform = glm::rotate(glm::mat4(1.0), glm::radians(90.0f), glm::vec3(1,0,0)) *
+                glm::scale(glm::mat4(1.0), glm::vec3(5.0f, 15.0f, 5.0f));
+    model.addMesh("purple planet satellite 1",mesh,mat,transform);
+    in.close();
+
+    // purple planet satellite 2
+    in.open("models/cylinder.obj");
+    mesh = util::ObjImporter<VertexAttrib>::importFile(in, true);
+    mat.setAmbient(0.5, 0.4,
+                   1);  // only this one is used currently to determine color
+    mat.setDiffuse(0.5, 0.4, 1);
+    mat.setSpecular(0.5, 0.4, 1);
+    transform = glm::rotate(glm::mat4(1.0), glm::radians(90.0f), glm::vec3(1,0,0)) *
+                glm::scale(glm::mat4(1.0), glm::vec3(5.0f, 7.0f, 5.0f));
+    model.addMesh("purple planet satellite 2",mesh,mat,transform);
     in.close();
 }

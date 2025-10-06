@@ -36,6 +36,7 @@ private:
     void dispose(GLFWwindow* window);
 
     void onkey(GLFWwindow* window, int key, int scancode, int action, int mods);
+    void onmouse(GLFWwindow* window, int button, int action, int mods);
     void error_callback(int error, const char* description);
 
     GLFWwindow* window;

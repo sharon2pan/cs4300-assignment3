@@ -39,11 +39,19 @@ vector<string> Model::getMeshNames() {
 }
 
 void Model::animateStep(float time) {
+    // trackball
+    animation_transformations["trackball"] =
+        glm::rotate(glm::mat4(1.0), glm::radians(-10.0f),
+                    glm::vec3(0.0f, 1.0f, 0.0f));
+
     // red planet
     animation_transformations["red planet"] =
+        // orbiting around the sun (speed)
         glm::rotate(glm::mat4(1.0), glm::radians(-150.0f * time),
                     glm::vec3(0.0f, 1.0f, 0.0f)) *
+        // moving the planet away from the sun
         glm::translate(glm::mat4(1.0), glm::vec3(75.0f, 50.0f, 0.0f)) *
+        // tilt the orbit
         glm::rotate(glm::mat4(1.0), glm::radians(150.0f * time),
                     glm::vec3(0.0f, 0.0f, 1.0f));
 
@@ -52,6 +60,8 @@ void Model::animateStep(float time) {
         glm::rotate(glm::mat4(1.0), glm::radians(-50.0f * time),
                     glm::vec3(0.0f, 1.0f, 0.0f)) *
         glm::translate(glm::mat4(1.0), glm::vec3(-110.0f, 50.0f, -200.0f)) *
+        glm::rotate(glm::mat4(1.0), glm::radians(time * 10.0f),
+                    glm::vec3(1.0f, 0.0f, 0.0f)) *
         glm::rotate(glm::mat4(1.0), glm::radians(-time * 50.0f),
                     glm::vec3(0.0f, 1.0f, 0.0f));
 
@@ -60,16 +70,48 @@ void Model::animateStep(float time) {
         glm::rotate(glm::mat4(1.0), glm::radians(-75.0f * time),
                     glm::vec3(0.0f, 1.0f, 0.0f)) *
         glm::translate(glm::mat4(1.0), glm::vec3(100.0f, 0.0f, 200.0f)) *
-        glm::rotate(glm::mat4(1.0), glm::radians(time * 75.0f),
+        glm::rotate(glm::mat4(1.0), glm::radians(-time * 75.0f),
                     glm::vec3(1.0f, 1.0f, 0.0f));
+
+    // blue planet satellite
+    animation_transformations["blue planet satellite"] =
+        glm::rotate(glm::mat4(1.0), glm::radians(-150.0f * time),
+                    glm::vec3(0.0f, 1.0f, 0.0f)) *
+        glm::translate(glm::mat4(1.0), glm::vec3(1.5f, 0.0f, 0.0f)) *
+        glm::scale(glm::mat4(1.0), glm::vec3(0.06f, 0.06f, 0.06f));
 
     // purple planet
     animation_transformations["purple planet"] =
-        glm::rotate(glm::mat4(1.0), glm::radians(-50.0f * time),
+        glm::rotate(glm::mat4(1.0), glm::radians(-100.0f * time),
                     glm::vec3(0.0f, 1.0f, 0.0f)) *
-        glm::translate(glm::mat4(1.0), glm::vec3(-100.0f, 0.0f, 200.0f)) *
-        glm::rotate(glm::mat4(1.0), glm::radians(time * 50.0f),
+        glm::translate(glm::mat4(1.0), glm::vec3(0.0f, 0.0f, 100.0f)) *
+        glm::rotate(glm::mat4(1.0), glm::radians(time * 60.0f),
                     glm::vec3(0.0f, 1.0f, 0.0f));
+
+    // purple planet satellite 1
+    animation_transformations["purple planet satellite 1"] =
+        glm::rotate(glm::mat4(1.0), glm::radians(-150.0f * time),
+                    glm::vec3(0.0f, 1.0f, 0.0f)) *
+        glm::translate(glm::mat4(1.0), glm::vec3(1.5f, 0.0f, 0.0f)) *
+        glm::scale(glm::mat4(1.0), glm::vec3(0.07f, 0.07f, 0.07f));
+
+    
+    // purple planet satellite 2
+    // elliptical orbit using the orbit equation
+    float angle = glm::radians(-200.0f * time);
+    float semiMajorAxis = 1.2f;
+    float eccentricity = 0.4f;
+    float distance = semiMajorAxis * (1 - eccentricity * eccentricity) / (1 + eccentricity * cos(angle));
+
+    // translate into cartesian coordinates
+    float x = distance * cos(angle);
+    float z = distance * sin(angle);
+
+    animation_transformations["purple planet satellite 2"] =
+        glm::rotate(glm::mat4(1.0), glm::radians(-10.0f * time),
+                    glm::vec3(0.0f, 1.0f, 0.0f)) *
+        glm::translate(glm::mat4(1.0), glm::vec3(x, 0.0f, z)) *
+        glm::scale(glm::mat4(1.0), glm::vec3(0.06f, 0.06f, 0.06f));
 }
 
 Model::~Model()
