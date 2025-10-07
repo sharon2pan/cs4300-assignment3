@@ -1,9 +1,9 @@
-OBJS = CameraViews.o View.o Controller.o Model.o
+OBJS = Assignment3.o View.o Controller.o Model.o
 INCLUDES = -I../include
 LIBS = -L../lib
 LDFLAGS = -lglad -lglfw3
 CFLAGS = -g -std=c++11
-PROGRAM = CameraViews
+PROGRAM = Assignment3
 
 
 ifeq ($(OS),Windows_NT)     # is Windows_NT on XP, 2000, 7, Vista, 10...
@@ -15,11 +15,11 @@ else ifeq ($(shell uname -s),Darwin)     # is MACOSX
     COMPILER = g++
 endif
 
-CameraViews: clean $(OBJS)
+Assignment3: clean $(OBJS)
 	$(COMPILER) -o $(PROGRAM) $(OBJS) $(LIBS) $(LDFLAGS)
 
-CameraViews.o: CameraViews.cpp
-	$(COMPILER) $(INCLUDES) $(CFLAGS) -c CameraViews.cpp
+Assignment3.o: Assignment3.cpp
+	$(COMPILER) $(INCLUDES) $(CFLAGS) -c Assignment3.cpp
 
 View.o: View.cpp View.h
 	$(COMPILER) $(INCLUDES) $(CFLAGS) -c View.cpp	

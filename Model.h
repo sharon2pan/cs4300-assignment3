@@ -20,6 +20,7 @@ public:
     vector<string> getMeshNames();
     void addMesh(const string& name,util::PolygonMesh<VertexAttrib>& mesh,util::Material& mat,glm::mat4& transformation);
     void animateStep(float time);
+
 private:
     map<string,util::PolygonMesh<VertexAttrib> > meshes;
     map<string,util::Material> materials;

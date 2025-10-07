@@ -39,18 +39,13 @@ vector<string> Model::getMeshNames() {
 }
 
 void Model::animateStep(float time) {
-    // trackball
-    animation_transformations["trackball"] =
-        glm::rotate(glm::mat4(1.0), glm::radians(-10.0f),
-                    glm::vec3(0.0f, 1.0f, 0.0f));
-
     // red planet
     animation_transformations["red planet"] =
         // orbiting around the sun (speed)
         glm::rotate(glm::mat4(1.0), glm::radians(-150.0f * time),
                     glm::vec3(0.0f, 1.0f, 0.0f)) *
         // moving the planet away from the sun
-        glm::translate(glm::mat4(1.0), glm::vec3(75.0f, 50.0f, 0.0f)) *
+        glm::translate(glm::mat4(1.0), glm::vec3(75.0f, 150.0f, 0.0f)) *
         // tilt the orbit
         glm::rotate(glm::mat4(1.0), glm::radians(150.0f * time),
                     glm::vec3(0.0f, 0.0f, 1.0f));
@@ -59,7 +54,7 @@ void Model::animateStep(float time) {
     animation_transformations["orange planet"] =
         glm::rotate(glm::mat4(1.0), glm::radians(-50.0f * time),
                     glm::vec3(0.0f, 1.0f, 0.0f)) *
-        glm::translate(glm::mat4(1.0), glm::vec3(-110.0f, 50.0f, -200.0f)) *
+        glm::translate(glm::mat4(1.0), glm::vec3(-110.0f, 150.0f, -200.0f)) *
         glm::rotate(glm::mat4(1.0), glm::radians(time * 10.0f),
                     glm::vec3(1.0f, 0.0f, 0.0f)) *
         glm::rotate(glm::mat4(1.0), glm::radians(-time * 50.0f),
@@ -69,7 +64,7 @@ void Model::animateStep(float time) {
     animation_transformations["blue planet"] =
         glm::rotate(glm::mat4(1.0), glm::radians(-75.0f * time),
                     glm::vec3(0.0f, 1.0f, 0.0f)) *
-        glm::translate(glm::mat4(1.0), glm::vec3(100.0f, 0.0f, 200.0f)) *
+        glm::translate(glm::mat4(1.0), glm::vec3(100.0f, 160.0f, 200.0f)) *
         glm::rotate(glm::mat4(1.0), glm::radians(-time * 75.0f),
                     glm::vec3(1.0f, 1.0f, 0.0f));
 
@@ -84,7 +79,7 @@ void Model::animateStep(float time) {
     animation_transformations["purple planet"] =
         glm::rotate(glm::mat4(1.0), glm::radians(-100.0f * time),
                     glm::vec3(0.0f, 1.0f, 0.0f)) *
-        glm::translate(glm::mat4(1.0), glm::vec3(0.0f, 0.0f, 100.0f)) *
+        glm::translate(glm::mat4(1.0), glm::vec3(0.0f, 140.0f, 100.0f)) *
         glm::rotate(glm::mat4(1.0), glm::radians(time * 60.0f),
                     glm::vec3(0.0f, 1.0f, 0.0f));
 

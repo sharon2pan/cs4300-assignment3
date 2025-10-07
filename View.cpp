@@ -4,7 +4,6 @@
 #include <vector>
 #include <iostream>
 using namespace std;
-#include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
@@ -31,7 +30,7 @@ void View::init(Model& model)
 
     window_dimensions = glm::ivec2(800,800);
 
-    window = glfwCreateWindow(window_dimensions.x,window_dimensions.y, "CameraViews", NULL, NULL);
+    window = glfwCreateWindow(window_dimensions.x,window_dimensions.y, "Assignment 3: Solar-System-In-A-Box", NULL, NULL);
     if (!window)
     {
         glfwTerminate();
@@ -48,6 +47,12 @@ void View::init(Model& model)
         static_cast<View*>(glfwGetWindowUserPointer(window))->onkey(window,key,scancode,action,mods);
     });
 
+    glfwSetMouseButtonCallback(window, 
+    [](GLFWwindow* window, int button, int action, int mods)
+    {
+        static_cast<View*>(glfwGetWindowUserPointer(window))->onmouse(window,button,action,mods);
+    });
+
     glfwSetWindowSizeCallback(window, 
     [](GLFWwindow* window, int width,int height)
     {
@@ -61,31 +66,10 @@ void View::init(Model& model)
     // create the shader program
     program.createProgram(string("shaders/default.vert"),
                           string("shaders/default.frag"));
-    // assuming it got created, get all the shader variables that it uses
-    // so we can initialize them at some point
     // enable the shader program
     program.enable();
     shaderLocations = program.getAllShaderVariables();
 
-    
-    //now we create an object that will be used to render this mesh in opengl
-    /*
-     * now we create an ObjectInstance for it.
-     * The ObjectInstance encapsulates a lot of the OpenGL-specific code
-     * to draw this object
-     */
-
-    /* so in the mesh, we have some attributes for each vertex. In the shader
-     * we have variables for each vertex attribute. We have to provide a mapping
-     * between attribute name in the mesh and corresponding shader variable
-     name.
-     *
-     * This will allow us to use PolygonMesh with any shader program, without
-     * assuming that the attribute names in the mesh and the names of
-     * shader variables will be the same.
-
-       We create such a shader variable -> vertex attribute mapping now
-     */
     map<string, string> shaderVarsToVertexAttribs;
 
     // currently there are only two per-vertex attribute: position and color
@@ -103,9 +87,6 @@ void View::init(Model& model)
         objects[name] = obj;
     }
 
-    
-	
-
     //prepare the projection matrix for orthographic projection
 	glViewport(0, 0, window_dimensions.x, window_dimensions.y);
     projection = glm::perspective((float)glm::radians(60.0f),
@@ -113,12 +94,11 @@ void View::init(Model& model)
             0.1f,
             10000.0f);
             
-    angleOfRotation = 0;
-    cameraMode = GLOBAL;
-
     frames = 0;
     time = glfwGetTime();
-    
+
+    initialMousePos = glm::vec2(0.0f, 0.0f);
+    trackballRotation = glm::mat4(1.0f);
 }
 
 
@@ -143,26 +123,13 @@ void View::display(Model& model)
     }
     modelview.push(glm::mat4(1.0));
 
-    if (cameraMode == GLOBAL)
-    {
-        glm::vec4 camera = glm::vec4(0.0f, 600.0f, 600.0f, 1.0f);
-        // transform the camera
-        // camera = cameraRotation * camera;
-        modelview.top() = modelview.top() *
-                          glm::lookAt(glm::vec3(camera.x, camera.y, camera.z),
-                                      glm::vec3(0.0f, 0.0f, 0.0f),
-                                      glm::vec3(0.0f, 1.0f, 0.0f));
-    }
-    else
-    {
-        
-
-        modelview.top() = modelview.top() *
-            glm::lookAt(glm::vec3(0.0f,0.0f,-10.0f),glm::vec3(0.0f,0.0f,500.0f),glm::vec3(0.0f,1.0f,0.0f))
-            * glm::inverse(model.getAnimationTransform("red planet"));
-
-            
-    }
+    glm::vec4 camera = glm::vec4(0.0f, 600.0f, 600.0f, 1.0f);
+    // transform the camera
+    // camera = cameraRotation * camera;
+    modelview.top() = modelview.top() *
+                      glm::lookAt(glm::vec3(camera.x, camera.y, camera.z),
+                                  glm::vec3(0.0f, 0.0f, 0.0f),
+                                  glm::vec3(0.0f, 1.0f, 0.0f));
 
     for (string name:model.getMeshNames()) {
         modelview.push(modelview.top());  // save the current modelview
@@ -172,16 +139,16 @@ void View::display(Model& model)
         if (name.find(" satellite") != std::string::npos) {
             std::string planetName = name.substr(0, name.find(" satellite"));
             glm::mat4 planetTransform = model.getTransform(planetName);
-            glm::mat4 planetAnimation = model.getAnimationTransform(planetName);
+            glm::mat4 planetAnim = model.getAnimationTransform(planetName);
 
-            transform = planetAnimation * planetTransform *
+            transform = planetAnim * planetTransform *
             model.getAnimationTransform(name) * model.getTransform(name);
         }
         else {
             transform =
             model.getAnimationTransform(name) * model.getTransform(name);
         }
-        modelview.top() = modelview.top() * transform;
+        modelview.top() = modelview.top() * trackballRotation * transform;
 
         // The total transformation is whatever was passed to it, with its own
         // transformation
@@ -225,19 +192,34 @@ void View::onkey(GLFWwindow* window, int key, int scancode, int action, int mods
         closeWindow();
         exit(EXIT_SUCCESS);
     }
-    if (key=='F') {
-        cameraMode = FPS;
-    }
-    else if (key=='G') {
-        cameraMode = GLOBAL;
-    }
 }
 
 void View::onmouse(GLFWwindow* window, int button, int action, int mods)
 {
+    glm::vec2 finalMousePos = glm::vec2(0.0f, 0.0f);
+
     if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
-        printf("yo");
+        double xpos, ypos;
+        glfwGetCursorPos(window, &xpos, &ypos);
+        initialMousePos = glm::vec2(xpos, ypos);
     }
+    if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_RELEASE) {
+        double xpos, ypos;
+        glfwGetCursorPos(window, &xpos, &ypos);
+        finalMousePos = glm::vec2(xpos, ypos);
+
+        updateTrackballRotation(initialMousePos, finalMousePos);
+    }
+}
+
+void View::updateTrackballRotation(glm::vec2 initialMousePos, glm::vec2 finalMousePos)
+{   
+    glm::vec2 difference = finalMousePos - initialMousePos;
+    float magnitude = glm::length(difference) * 0.001f;
+    glm::vec3 axis = glm::normalize(glm::vec3(difference.y, difference.x, 0.0f));
+    glm::mat4 rotation = glm::rotate(glm::mat4(1.0f), magnitude, axis);
+
+    trackballRotation = rotation * trackballRotation;
 }
 
 void View::reshape(GLFWwindow* window, int width, int height) 

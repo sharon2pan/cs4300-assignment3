@@ -43,7 +43,7 @@ void Controller::createModels() {
     mat.setDiffuse(0, 0, 0);
     mat.setSpecular(0, 0, 0);
 
-    transform = glm::translate(glm::mat4(1.0), glm::vec3(0.0f, 30.0f, 0.0f)) *
+    transform = glm::translate(glm::mat4(1.0), glm::vec3(0.0f, 150.0f, 0.0f)) *
                 glm::scale(glm::mat4(1.0), glm::vec3(700.0f, 700.0f, 700.0f));
 
     model.addMesh("trackball",mesh,mat,transform);
@@ -124,7 +124,7 @@ void Controller::createModels() {
                    0);  // only this one is used currently to determine color
     mat.setDiffuse(1, 1, 0);
     mat.setSpecular(1, 1, 0);
-    transform = glm::translate(glm::mat4(1.0), glm::vec3(0.0f, 30.0f, 0.0f)) *
+    transform = glm::translate(glm::mat4(1.0), glm::vec3(0.0f, 150.0f, 0.0f)) *
                 glm::scale(glm::mat4(1.0), glm::vec3(50.0f, 50.0f, 50.0f));
     
     model.addMesh("sun",mesh,mat,transform);

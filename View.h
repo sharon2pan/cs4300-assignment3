@@ -6,6 +6,7 @@
 #define GLFW_INCLUDE_NONE
 #endif
 #include <GLFW/glfw3.h>
+#include <glm/glm.hpp>
 #include <cstdio>
 #include <ShaderProgram.h>
 #include <ObjectInstance.h>
@@ -34,6 +35,8 @@ public:
 private:   
     void reshape(GLFWwindow* window, int width, int height);
     void dispose(GLFWwindow* window);
+    // function to move the window as mouse is dragged
+    void updateTrackballRotation(glm::vec2 initialMousePos, glm::vec2 finalMousePos);
 
     void onkey(GLFWwindow* window, int key, int scancode, int action, int mods);
     void onmouse(GLFWwindow* window, int button, int action, int mods);
@@ -48,10 +51,9 @@ private:
     int frames;
     double time;
     glm::ivec2 window_dimensions;
-    int angleOfRotation;
-    TypeOfCamera cameraMode;
 
-    
+    glm::vec2 initialMousePos;
+    glm::mat4 trackballRotation;    
 };
 
 #endif
