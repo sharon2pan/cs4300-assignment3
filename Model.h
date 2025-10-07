@@ -17,6 +17,7 @@ public:
     const util::Material& getMaterial(const string& name);
     const glm::mat4 getTransform(const string& name);
     const glm::mat4 getAnimationTransform(const string& name);
+    const vector<glm::vec3>& getOrbitPoints(const string& name);
     vector<string> getMeshNames();
     void addMesh(const string& name,util::PolygonMesh<VertexAttrib>& mesh,util::Material& mat,glm::mat4& transformation);
     void animateStep(float time);

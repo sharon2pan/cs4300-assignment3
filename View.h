@@ -41,6 +41,7 @@ private:
     void onkey(GLFWwindow* window, int key, int scancode, int action, int mods);
     void onmouse(GLFWwindow* window, int button, int action, int mods);
     void error_callback(int error, const char* description);
+    void drawOrbit(vector<glm::vec3> points);
 
     GLFWwindow* window;
     util::ShaderProgram program;
@@ -48,12 +49,14 @@ private:
     map<string,util::ObjectInstance *> objects;
     glm::mat4 projection;
     stack<glm::mat4> modelview;
+    stack<glm::vec4> orbitModelView;
     int frames;
     double time;
     glm::ivec2 window_dimensions;
 
     glm::vec2 initialMousePos;
-    glm::mat4 trackballRotation;    
+    glm::mat4 trackballRotation;  
+    map<string,vector<glm::vec3>> orbitPoints;  
 };
 
 #endif

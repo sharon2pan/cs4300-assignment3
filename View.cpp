@@ -99,6 +99,7 @@ void View::init(Model& model)
 
     initialMousePos = glm::vec2(0.0f, 0.0f);
     trackballRotation = glm::mat4(1.0f);
+    orbitPoints = map<string,vector<glm::vec3>>();
 }
 
 
@@ -115,13 +116,14 @@ void View::display(Model& model)
     glPolygonMode(GL_FRONT_AND_BACK,GL_LINE); //outline mode
     
 
-     glUniformMatrix4fv(shaderLocations.getLocation("projection"), 1,
+    glUniformMatrix4fv(shaderLocations.getLocation("projection"), 1,
                               false, glm::value_ptr(projection));
     
     while (!modelview.empty()) {
         modelview.pop();
     }
     modelview.push(glm::mat4(1.0));
+    //orbitModelView.push(glm::vec4(1.0));
 
     glm::vec4 camera = glm::vec4(0.0f, 600.0f, 600.0f, 1.0f);
     // transform the camera
@@ -135,7 +137,7 @@ void View::display(Model& model)
         modelview.push(modelview.top());  // save the current modelview
         glm::mat4 transform;
 
-        // Apply planet transformations to the satellites
+        // apply planet transformations to the satellites
         if (name.find(" satellite") != std::string::npos) {
             std::string planetName = name.substr(0, name.find(" satellite"));
             glm::mat4 planetTransform = model.getTransform(planetName);
@@ -150,14 +152,35 @@ void View::display(Model& model)
         }
         modelview.top() = modelview.top() * trackballRotation * transform;
 
-        // The total transformation is whatever was passed to it, with its own
-        // transformation
+        // find the current position of the planet in world coordinates
+        glm::vec4 orbitPosition = modelview.top() * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+
+        // keep the orbit points to a maximum of 200
+        if (orbitPoints[name].size() == 200) {
+            orbitPoints[name].erase(orbitPoints[name].begin());
+        }
+
+        // update the existing orbit points to account for trackball rotation
+        for (glm::vec3 point3D : orbitPoints[name]) {
+            glm::vec4 point4D = glm::vec4(point3D, 1.0f);
+            point4D = trackballRotation * point4D;
+            point3D = glm::vec3(point4D.x, point4D.y, point4D.z);
+        }
+
+        // add new position to the orbit vector
+        (orbitPoints[name]).push_back(glm::vec3(orbitPosition.x, orbitPosition.y, orbitPosition.z));
+        
+
+        // the total transformation is whatever was passed to it, with its own transformation
         glUniformMatrix4fv(shaderLocations.getLocation("modelview"), 1,
                               false, glm::value_ptr(modelview.top()));
         // set the color for all vertices to be drawn for this object
         glUniform4fv(shaderLocations.getLocation("vColor"), 1,
                         glm::value_ptr(model.getMaterial(name).getAmbient()));
+        
         objects[name]->draw();
+        if (orbitPoints[name].size() > 2) drawOrbit(orbitPoints[name]);
+        
         modelview.pop();
     }
 
@@ -177,8 +200,39 @@ void View::display(Model& model)
         frames = 0;
         time = currenttime;
     }
-    
+}
 
+void View::drawOrbit(vector<glm::vec3> points) {
+    // setup
+    GLuint vao = 0, vbo = 0;
+    glGenVertexArrays(1, &vao);
+    glGenBuffers(1, &vbo);
+
+    glBindVertexArray(vao);
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    glBufferData(GL_ARRAY_BUFFER, points.size() * sizeof(glm::vec3), points.data(), GL_DYNAMIC_DRAW);
+
+    GLint vpos_location = shaderLocations.getLocation("vPosition");
+    glEnableVertexAttribArray(vpos_location);
+    glVertexAttribPointer(vpos_location, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+
+    // set the color to white
+    glm::vec4 color = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+    glUniform4fv(shaderLocations.getLocation("vColor"), 1, glm::value_ptr(color));
+
+    // set the modelview matrix to identity for drawing the orbit in world coordinates
+    glm::mat4 orbitModelView = glm::mat4(1.0f);
+    glUniformMatrix4fv(shaderLocations.getLocation("modelview"), 1, false, glm::value_ptr(orbitModelView));
+
+    // draw the orbit
+    glDrawArrays(GL_LINE_STRIP, 0, points.size());
+
+    // cleanup
+    glDisableVertexAttribArray(vpos_location);
+    glBindVertexArray(0);
+
+    glDeleteBuffers(1, &vbo);
+    glDeleteVertexArrays(1, &vao);
 }
 
 bool View::shouldWindowClose() {
